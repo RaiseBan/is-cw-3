@@ -1,9 +1,10 @@
 package com.example.prac.controllers;
 
-import com.example.prac.model.authEntity.AuthenticationRequest;
-import com.example.prac.model.authEntity.AuthenticationResponse;
-import com.example.prac.model.authEntity.AuthenticationService;
-import com.example.prac.model.authEntity.RegisterRequest;
+import com.example.prac.dto.auth.AuthenticationRequest;
+import com.example.prac.dto.auth.AuthenticationResponse;
+import com.example.prac.dto.auth.RegisterRequest;
+import com.example.prac.dto.auth.VerificationRequest;
+import com.example.prac.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,14 +14,24 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
     private final AuthenticationService authenticationService;
+
     @PostMapping("/register")
-    public ResponseEntity<AuthenticationResponse> registerUser(@RequestBody RegisterRequest request){
-        return ResponseEntity.ok(authenticationService.register(request));
+    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+        authenticationService.register(request);
+        return ResponseEntity.ok("Пользователь зарегистрирован. Проверьте email для получения кода подтверждения.");
     }
+
+    @PostMapping("/verify")
+    public ResponseEntity<AuthenticationResponse> verifyCode(@RequestBody VerificationRequest verificationRequest) {
+        AuthenticationResponse response = authenticationService.verifyCode(verificationRequest);
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/authenticate")
-    public ResponseEntity<AuthenticationResponse> registerUser(@RequestBody AuthenticationRequest request){
+    public ResponseEntity<AuthenticationResponse> authenticateUser(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(authenticationService.authenticate(request));
     }
+
     @GetMapping("/verify-token")
     public ResponseEntity<?> checkToken() {
         return ResponseEntity.ok("Token is valid");

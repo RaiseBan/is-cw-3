@@ -1,10 +1,12 @@
 package com.example.prac.repository;
 
-import com.example.prac.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.example.prac.model.authEntity.User;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
-public interface UserRepository extends JpaRepository<User, Long> {
-    User findByEmail(String email);
+@Repository
+public interface UserRepository extends CrudRepository<User, Long> {
+    Optional<User> findByEmail(String username);
 }
