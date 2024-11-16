@@ -1,5 +1,6 @@
 package com.example.prac.model.authEntity;
 
+import com.example.prac.model.data.Calendar;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
@@ -20,32 +21,32 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false, unique = true)
-    private Long id;
+    private Long userId;
 
-    @Column(name = "email", nullable = false, length = 100)
+    @Column(nullable = false, length = 20)
+    private String name;
+
+    @Column(nullable = false, length = 40, unique = true)
     private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(nullable = false, length = 100)
     private String password;
 
-
-    @Column(name = "is_verified", nullable = false)
-    private boolean isVerified = false;
-
     @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 20)
+    @Column(nullable = false, length = 20)
     private Role role;
 
-
-    @Override
-    public String getUsername() {
-        return email;
-    }
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Calendar calendar;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority(role.name()));
+    }
+
+    @Override
+    public String getUsername() {
+        return email;
     }
 
     @Override
@@ -68,3 +69,4 @@ public class User implements UserDetails {
         return true;
     }
 }
+

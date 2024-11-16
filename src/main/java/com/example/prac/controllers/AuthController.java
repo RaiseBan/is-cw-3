@@ -3,7 +3,6 @@ package com.example.prac.controllers;
 import com.example.prac.dto.auth.AuthenticationRequest;
 import com.example.prac.dto.auth.AuthenticationResponse;
 import com.example.prac.dto.auth.RegisterRequest;
-import com.example.prac.dto.auth.VerificationRequest;
 import com.example.prac.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,13 +17,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
         authenticationService.register(request);
-        return ResponseEntity.ok("Пользователь зарегистрирован. Проверьте email для получения кода подтверждения.");
-    }
-
-    @PostMapping("/verify")
-    public ResponseEntity<AuthenticationResponse> verifyCode(@RequestBody VerificationRequest verificationRequest) {
-        AuthenticationResponse response = authenticationService.verifyCode(verificationRequest);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok("Пользователь `" + request.getUsername() +"` зарегистрирован. " );
     }
 
     @PostMapping("/authenticate")

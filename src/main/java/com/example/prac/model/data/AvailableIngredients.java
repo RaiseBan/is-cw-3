@@ -2,15 +2,15 @@ package com.example.prac.model.data;
 
 import com.example.prac.model.authEntity.User;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Getter
+@Setter
 public class AvailableIngredients {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long availableIngredientId;

@@ -1,26 +1,36 @@
 package com.example.prac.model.data;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+import java.util.List;
+
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Getter
+@Setter
 public class Dish {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dishId;
 
-    @Column(length = 40, nullable = false)
+    @Column(nullable = false, length = 40)
     private String name;
 
-    @Column
-    private String description;
+    @Column(columnDefinition = "TEXT", nullable = false)
+    private String instructions;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "recipe_id", nullable = false, unique = true)
     private Recipe recipe;
+
+    @ManyToMany
+    @JoinTable(
+            name = "dish_ingredient", // Имя промежуточной таблицы
+            joinColumns = @JoinColumn(name = "dish_id"), // Колонка для блюда
+            inverseJoinColumns = @JoinColumn(name = "ingredient_id") // Колонка для ингредиента
+    )
+    private List<Ingredient> ingredients;
 }

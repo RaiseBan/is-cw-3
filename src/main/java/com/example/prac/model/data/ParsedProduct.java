@@ -4,16 +4,18 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Setter
-public class Recipe {
+public class ParsedProduct {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long recipeId;
+    private Long id;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String instructions;
+    @Column(nullable = false, length = 255, unique = true)
+    private String name;
+
+    @Column(nullable = false)
+    private Double price;
 }

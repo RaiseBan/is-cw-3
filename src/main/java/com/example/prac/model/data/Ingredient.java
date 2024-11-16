@@ -1,22 +1,27 @@
 package com.example.prac.model.data;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
+import java.util.List;
+
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Getter
+@Setter
 public class Ingredient {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ingredientId;
 
-    @Column(length = 40, nullable = false)
+    @Column(nullable = false, length = 40)
     private String name;
 
-    @Column(length = 40, nullable = false)
+    @Column(nullable = false, length = 40)
     private String unit;
+
+    @ManyToMany(mappedBy = "ingredients")
+    private List<Dish> dishes;
 }

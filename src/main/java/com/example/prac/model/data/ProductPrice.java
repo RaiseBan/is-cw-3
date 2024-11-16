@@ -1,17 +1,17 @@
 package com.example.prac.model.data;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Entity
+@Getter
+@Setter
 public class ProductPrice {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long productPriceId;
@@ -20,7 +20,7 @@ public class ProductPrice {
     @JoinColumn(name = "ingredient_id", nullable = false)
     private Ingredient ingredient;
 
-    @Column(length = 40, nullable = false)
+    @Column(nullable = false, length = 40)
     private String storeName;
 
     @Column(nullable = false)

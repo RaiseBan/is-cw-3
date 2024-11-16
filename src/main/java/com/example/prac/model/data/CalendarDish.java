@@ -1,6 +1,5 @@
 package com.example.prac.model.data;
 
-import com.example.prac.model.authEntity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,20 +10,20 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Getter
 @Setter
-public class DishHistory {
+public class CalendarDish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long historyId;
+    private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @JoinColumn(name = "calendar_id", nullable = false)
+    private Calendar calendar;
 
     @ManyToOne
     @JoinColumn(name = "dish_id", nullable = false)
     private Dish dish;
 
     @Column(nullable = false)
-    private LocalDateTime addedDate;
+    private LocalDateTime time; // Время добавления блюда в календарь
 }
