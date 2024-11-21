@@ -5,9 +5,11 @@ import com.example.prac.dto.data.IngredientDTO;
 import com.example.prac.dto.data.ShoppingListDTO;
 import com.example.prac.model.authEntity.User;
 import com.example.prac.model.data.*;
+import com.example.prac.repository.data.AvailableIngredientsRepository;
 import com.example.prac.repository.data.CalendarRepository;
 import com.example.prac.repository.data.ParsedProductRepository;
 import com.example.prac.repository.data.ProductPriceRepository;
+import com.example.prac.service.UserContextService;
 import com.example.prac.service.yandex.YandexTranslateService;
 import jakarta.persistence.EntityManager;
 import lombok.AllArgsConstructor;
@@ -29,6 +31,9 @@ public class CalendarService {
     private final ParsedProductRepository parsedProductRepository;
     private final ProductPriceRepository productPriceRepository;
     private final YandexTranslateService yandexTranslateService;
+    private final AvailableIngredientsRepository availableIngredientsRepository;
+
+    private final UserContextService userContextService;
     @Transactional
     public void addDishToCalendar(Long userId, Long dishId, String calendarDate) {
         // Проверяем, существует ли блюдо с указанным ID
@@ -75,6 +80,18 @@ public class CalendarService {
                 shoppingList.setUser(userCalendar.getUser());
                 shoppingList.setIngredient(ingredient);
                 entityManager.persist(shoppingList);
+            }
+
+            boolean ingredientExists = availableIngredientsRepository.existsByUserAndIngredient(userContextService.getCurrentUser(), ingredient);
+            System.out.println("ingredientExists " + ingredientExists);
+
+            // Если нет, добавляем новую запись
+            if (!ingredientExists) {
+                AvailableIngredients availableIngredient = new AvailableIngredients();
+                availableIngredient.setUser(userCalendar.getUser());
+                availableIngredient.setIngredient(ingredient);
+                availableIngredient.setAvailable(false); // По умолчанию ингредиент недоступен
+                entityManager.persist(availableIngredient);
             }
 
         }

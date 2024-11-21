@@ -3,6 +3,7 @@ package com.example.prac.service.parser;
 import com.example.prac.dto.parser.ProductCategory;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -13,9 +14,8 @@ public class ProductParserRunner implements CommandLineRunner {
 
     private final ProductParserService productParserService;
 
-    @Override
-    public void run(String... args) {
-        // Список ID категорий для обработки
+    // Метод, содержащий логику обработки категорий
+    public void processCategories() {
         List<String> categoryIds = List.of(
                 "73C2336", "73C9831", "73C2327", "73C10314", "73C10315",
                 "73C2339", "73C9727", "73C2333", "73C9769", "73C2335", "73C9786",
@@ -24,16 +24,28 @@ public class ProductParserRunner implements CommandLineRunner {
         for (String categoryId : categoryIds) {
             System.out.printf("Начинаем обработку категории: %s%n", categoryId);
 
-            // Загружаем категорию
             ProductCategory category = productParserService.fetchCategory(categoryId);
 
             if (category != null) {
-                // Сохраняем данные категории в базу данных
                 productParserService.saveProductsToDatabase(category);
             } else {
                 System.out.printf("Не удалось обработать категорию: %s%n", categoryId);
             }
         }
+    }
+
+    // Запуск обработки при старте приложения
+    @Override
+    public void run(String... args) {
+        System.out.println("Запуск обработки категорий при старте приложения...");
+        processCategories();
+    }
+
+    // Запуск обработки каждые 4 часа
+    @Scheduled(fixedRate = 14400000) // 4 часа в миллисекундах
+    public void scheduleProcessing() {
+        System.out.println("Периодический запуск обработки категорий...");
+        processCategories();
     }
 }
 

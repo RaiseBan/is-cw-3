@@ -13,4 +13,8 @@ public class UserContextService {
         User userDetails = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userDetails.getUserId(); // Или другой способ получения ID пользователя
     }
+
+    public User getCurrentUser(){
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
 }

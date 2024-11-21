@@ -1,0 +1,445 @@
+@startuml
+
+!theme plain
+top to bottom direction
+skinparam linetype ortho
+
+class ApplicationConfig {
+  + passwordEncoder(): PasswordEncoder
+  + authenticationManager(AuthenticationConfiguration): AuthenticationManager
+  + userDetailsService(): UserDetailsService
+  + authenticationProvider(): AuthenticationProvider
+}
+class AuthController {
+  + registerUser(RegisterRequest): ResponseEntity<?>
+  + authenticateUser(AuthenticationRequest): ResponseEntity<AuthenticationResponse>
+  + checkToken(): ResponseEntity<?>
+}
+class AuthenticationRequest {
+  + toString(): String
+  + getUsername(): String
+  + equals(Object): boolean
+  + setUsername(String): void
+  + hashCode(): int
+  + builder(): AuthenticationRequestBuilder
+  + getPassword(): String
+  # canEqual(Object): boolean
+  + setPassword(String): void
+}
+class AuthenticationResponse {
+  + builder(): AuthenticationResponseBuilder
+  # canEqual(Object): boolean
+  + getToken(): String
+  + hashCode(): int
+  + equals(Object): boolean
+  + toString(): String
+  + getRole(): Role
+  + setToken(String): void
+  + setRole(Role): void
+}
+class AuthenticationService {
+  + authenticate(AuthenticationRequest): AuthenticationResponse
+  + register(RegisterRequest): void
+}
+class AvailableIngredients {
+  + setUser(User): void
+  + setAvailable(Boolean): void
+  + getAvailableIngredientId(): Long
+  + setAvailableIngredientId(Long): void
+  + getAvailable(): Boolean
+  + getUser(): User
+  + getIngredient(): Ingredient
+  + setIngredient(Ingredient): void
+}
+interface AvailableIngredientsRepository << interface >> {
+  + existsByUserAndIngredient(User, Ingredient): boolean
+}
+class Calendar {
+  + getUser(): User
+  + setCalendarId(Long): void
+  + setUser(User): void
+  + getCalendarId(): Long
+  + getCalendarDishes(): List<CalendarDish>
+  + setCalendarDishes(List<CalendarDish>): void
+}
+class CalendarController {
+  + addDishToCalendar(CalendarDishDTO): ResponseEntity<Void>
+  + removeDishFromCalendar(Long): ResponseEntity<Void>
+  + getDishesFromCalendar(): ResponseEntity<List<DishResponseDTO>>
+  + getShoppingList(String, boolean, String): ResponseEntity<List<ShoppingListDTO>>
+}
+class CalendarDish {
+  + setCalendar(Calendar): void
+  + getTime(): LocalDateTime
+  + setOriginalDish(Dish): void
+  + getCalendar(): Calendar
+  + getDishId(): Long
+  + setDishId(Long): void
+  + setTime(LocalDateTime): void
+  + getOriginalDish(): Dish
+}
+class CalendarDishDTO {
+  + setDishId(Long): void
+  + getDishId(): Long
+  + toString(): String
+  + getCalendarDate(): String
+  + setCalendarDate(String): void
+  + equals(Object): boolean
+  + hashCode(): int
+  # canEqual(Object): boolean
+}
+interface CalendarDishRepository << interface >>
+interface CalendarRepository << interface >> {
+  + findByUser_UserId(Long): Optional<Calendar>
+}
+class CalendarService {
+  - updateIngredientPrices(List<Ingredient>): void
+  + addDishToCalendar(Long, Long, String): void
+  + createCalendar(User): void
+  + getDishesFromCalendar(Long): List<DishResponseDTO>
+  + getShoppingList(Long, String, boolean, String): List<ShoppingListDTO>
+  + removeDishFromCalendar(Long, Long): void
+}
+class DatabaseService {
+  + createGinIndexIfNotExists(): void
+  + executeSqlScript(String): void
+}
+class Dish {
+  + setDishId(Long): void
+  + setUserId(Long): void
+  + setName(String): void
+  + setIngredients(List<Ingredient>): void
+  + getInstructions(): String
+  + setInstructions(String): void
+  + getName(): String
+  + getUserId(): Long
+  + getDishId(): Long
+  + getIngredients(): List<Ingredient>
+}
+class DishController {
+  + createDish(DishDTO): ResponseEntity<DishResponseDTO>
+  + updateDish(Long, DishDTO): ResponseEntity<DishResponseDTO>
+  + deleteDish(Long): ResponseEntity<Void>
+  + getAllDishes(): ResponseEntity<List<DishResponseDTO>>
+}
+class DishDTO {
+  + setIngredients(List<IngredientDTO>): void
+  + getDateTime(): String
+  + getInstructions(): String
+  # canEqual(Object): boolean
+  + toString(): String
+  + hashCode(): int
+  + setDateTime(String): void
+  + equals(Object): boolean
+  + setInstructions(String): void
+  + getIngredients(): List<IngredientDTO>
+  + setName(String): void
+  + getName(): String
+}
+class DishHistory {
+  + setDish(Dish): void
+  + getUser(): User
+  + getAddedDate(): LocalDateTime
+  + setHistoryId(Long): void
+  + getHistoryId(): Long
+  + getDish(): Dish
+  + setUser(User): void
+  + setAddedDate(LocalDateTime): void
+}
+interface DishRepository << interface >> {
+  + getDishByDishId(Long): Optional<Dish>
+}
+class DishResponseDTO {
+  + toString(): String
+  + getName(): String
+  + setId(Long): void
+  + setIngredients(List<IngredientDTO>): void
+  + getIngredients(): List<IngredientDTO>
+  + setName(String): void
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getId(): Long
+  + getInstructions(): String
+  + setInstructions(String): void
+  + hashCode(): int
+}
+class DishService {
+  - mapIngredients(List<IngredientDTO>): List<Ingredient>
+  + deleteDish(Long): void
+  - mapToResponse(Dish): DishResponseDTO
+  + getAllDishes(Long): List<DishResponseDTO>
+  + updateDish(Long, DishDTO): DishResponseDTO
+  + createDish(DishDTO, Long): DishResponseDTO
+}
+class ErrorDetails {
+  + setTimeStamp(Date): void
+  + setDetails(String): void
+  + setMessage(String): void
+  + getTimeStamp(): Date
+  + getMessage(): String
+  + getDetails(): String
+}
+class GlobalExceptionHandler {
+  + handleGlobalException(Exception, WebRequest): ResponseEntity<ErrorDetails>
+  + handleResourceNotFoundException(ResourceNotFoundException, WebRequest): ResponseEntity<ErrorDetails>
+}
+class Ingredient {
+  + setUnit(String): void
+  + setIngredientId(Long): void
+  + setDishes(List<Dish>): void
+  + getDishes(): List<Dish>
+  + getIngredientId(): Long
+  + getUnit(): String
+  + setName(String): void
+  + getName(): String
+}
+class IngredientController {
+  + updateIngredientAvailability(Long, boolean): ResponseEntity<Void>
+}
+class IngredientDTO {
+  + setName(String): void
+  + setUnit(String): void
+  + equals(Object): boolean
+  + hashCode(): int
+  + getUnit(): String
+  + toString(): String
+  + getId(): Long
+  # canEqual(Object): boolean
+  + setId(Long): void
+  + getName(): String
+}
+interface IngredientRepository << interface >> {
+  + findByName(String): Optional<Ingredient>
+}
+class IngredientService {
+  + updateIngredientAvailability(Long, Long, boolean): void
+}
+class JwtAuthFilter {
+  # doFilterInternal(HttpServletRequest, HttpServletResponse, FilterChain): void
+}
+class JwtService {
+  + generateToken(Map<String, Object>, UserDetails): String
+  + generateToken(UserDetails): String
+  + extractClaim(String, Function<Claims, T>): T
+  - getSigningKey(): Key
+  - isTokenExpired(String): boolean
+  - extractExpiration(String): Date
+  + extractAllClaims(String): Claims
+  + extractUsername(String): String
+  + isTokenValid(String, UserDetails): boolean
+}
+class ParsedProduct {
+  + getPrice(): Double
+  + setPrice(Double): void
+  + getId(): Long
+  + getName(): String
+  + hashCode(): int
+  + toString(): String
+  + setName(String): void
+  + setId(Long): void
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+}
+interface ParsedProductRepository << interface >> {
+  + findAllNames(): List<String>
+  + findByFullTextSearch(String): List<ParsedProduct>
+  + findParsedProductByName(String): ParsedProduct
+}
+class PracApplication {
+  + main(String[]): void
+  + run(String[]): void
+}
+class PracApplicationTests {
+  ~ contextLoads(): void
+}
+class Prices {
+  + toString(): String
+  + equals(Object): boolean
+  # canEqual(Object): boolean
+  + getRegular(): String
+  + hashCode(): int
+  + setRegular(String): void
+}
+class Product {
+  + toString(): String
+  + getName(): String
+  + setPrices(Prices): void
+  + equals(Object): boolean
+  + hashCode(): int
+  + getPrices(): Prices
+  # canEqual(Object): boolean
+  + setName(String): void
+}
+class ProductCategory {
+  + setName(String): void
+  + toString(): String
+  + hashCode(): int
+  + setId(String): void
+  + setSubcategories(List<Subcategory>): void
+  + getSubcategories(): List<Subcategory>
+  # canEqual(Object): boolean
+  + equals(Object): boolean
+  + getId(): String
+  + getName(): String
+}
+class ProductFetcherWithJsoup {
+  + main(String[]): void
+}
+class ProductParserRunner {
+  + processCategories(): void
+  + scheduleProcessing(): void
+  + run(String[]): void
+}
+class ProductParserService {
+  + saveProductsToDatabase(ProductCategory): void
+  + fetchCategory(String): ProductCategory
+}
+class ProductPrice {
+  + getIngredient(): Ingredient
+  + getUpdatedAt(): LocalDateTime
+  + setIngredient(Ingredient): void
+  + getProductPriceId(): Long
+  + setProductPriceId(Long): void
+  + getPrice(): Float
+  + setPrice(Float): void
+  + getStoreName(): String
+  + setUpdatedAt(LocalDateTime): void
+  + setStoreName(String): void
+}
+interface ProductPriceRepository << interface >>
+class RegisterRequest {
+  + hashCode(): int
+  + equals(Object): boolean
+  + getPassword(): String
+  + toString(): String
+  + builder(): RegisterRequestBuilder
+  # canEqual(Object): boolean
+  + setPassword(String): void
+  + getUsername(): String
+  + setUsername(String): void
+}
+class ResourceNotFoundException
+enum Role << enumeration >> {
+  + valueOf(String): Role
+  + values(): Role[]
+}
+class SecurityConfig {
+  + corsConfigurationSource(): CorsConfigurationSource
+  + securityFilterChain(HttpSecurity): SecurityFilterChain
+}
+class ShoppingList {
+  + setIngredient(Ingredient): void
+  + setShoppingListId(Long): void
+  + getShoppingListId(): Long
+  + setUser(User): void
+  + getIngredient(): Ingredient
+  + getUser(): User
+}
+class ShoppingListDTO {
+  + setPrice(Double): void
+  + getDishName(): String
+  # canEqual(Object): boolean
+  + getPrice(): Double
+  + setStoreName(String): void
+  + getStoreName(): String
+  + setCount(Integer): void
+  + equals(Object): boolean
+  + hashCode(): int
+  + toString(): String
+  + getCount(): Integer
+  + setIngredientName(String): void
+  + getIngredientName(): String
+  + setDishName(String): void
+}
+class Subcategory {
+  + setName(String): void
+  # canEqual(Object): boolean
+  + hashCode(): int
+  + setId(String): void
+  + getId(): String
+  + equals(Object): boolean
+  + toString(): String
+  + setProducts(List<Product>): void
+  + getName(): String
+  + getProducts(): List<Product>
+}
+class User {
+  + getUsername(): String
+  + getRole(): Role
+  + setPassword(String): void
+  + isEnabled(): boolean
+  + getAuthorities(): Collection<GrantedAuthority>
+  + isAccountNonExpired(): boolean
+  + builder(): UserBuilder
+  + getCalendar(): Calendar
+  + getEmail(): String
+  + getPassword(): String
+  + isAccountNonLocked(): boolean
+  + setUserId(Long): void
+  + getUserId(): Long
+  + setEmail(String): void
+  + isCredentialsNonExpired(): boolean
+  + setRole(Role): void
+  + setCalendar(Calendar): void
+}
+class UserContextService {
+  + getCurrentUser(): User
+  + getCurrentUserId(): Long
+}
+interface UserRepository << interface >> {
+  + findByEmail(String): Optional<User>
+}
+class YandexTranslateService {
+  + translate(String): String
+  + main(String[]): void
+}
+
+ApplicationConfig              "1" *-[#595959,plain]-> "userRepository\n1" UserRepository                 
+AuthController                 "1" *-[#595959,plain]-> "authenticationService\n1" AuthenticationService          
+AuthenticationResponse         "1" *-[#595959,plain]-> "role\n1" Role                           
+AuthenticationService          "1" *-[#595959,plain]-> "calendarService\n1" CalendarService                
+AuthenticationService          "1" *-[#595959,plain]-> "jwtService\n1" JwtService                     
+AuthenticationService          "1" *-[#595959,plain]-> "userRepository\n1" UserRepository                 
+AvailableIngredients           "1" *-[#595959,plain]-> "ingredient\n1" Ingredient                     
+AvailableIngredients           "1" *-[#595959,plain]-> "user\n1" User                           
+Calendar                       "1" *-[#595959,plain]-> "calendarDishes\n*" CalendarDish                   
+Calendar                       "1" *-[#595959,plain]-> "user\n1" User                           
+CalendarController             "1" *-[#595959,plain]-> "calendarService\n1" CalendarService                
+CalendarController             "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+CalendarDish                   "1" *-[#595959,plain]-> "calendar\n1" Calendar                       
+CalendarDish                   "1" *-[#595959,plain]-> "originalDish\n1" Dish                           
+CalendarService                "1" *-[#595959,plain]-> "availableIngredientsRepository\n1" AvailableIngredientsRepository 
+CalendarService                "1" *-[#595959,plain]-> "calendarRepository\n1" CalendarRepository             
+CalendarService                "1" *-[#595959,plain]-> "parsedProductRepository\n1" ParsedProductRepository        
+CalendarService                "1" *-[#595959,plain]-> "productPriceRepository\n1" ProductPriceRepository         
+CalendarService                "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+CalendarService                "1" *-[#595959,plain]-> "yandexTranslateService\n1" YandexTranslateService         
+Dish                           "1" *-[#595959,plain]-> "ingredients\n*" Ingredient                     
+DishController                 "1" *-[#595959,plain]-> "dishService\n1" DishService                    
+DishController                 "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+DishDTO                        "1" *-[#595959,plain]-> "ingredients\n*" IngredientDTO                  
+DishHistory                    "1" *-[#595959,plain]-> "dish\n1" Dish                           
+DishHistory                    "1" *-[#595959,plain]-> "user\n1" User                           
+DishResponseDTO                "1" *-[#595959,plain]-> "ingredients\n*" IngredientDTO                  
+DishService                    "1" *-[#595959,plain]-> "dishRepository\n1" DishRepository                 
+DishService                    "1" *-[#595959,plain]-> "ingredientRepository\n1" IngredientRepository           
+DishService                    "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+Ingredient                     "1" *-[#595959,plain]-> "dishes\n*" Dish                           
+IngredientController           "1" *-[#595959,plain]-> "ingredientService\n1" IngredientService              
+IngredientController           "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+IngredientService              "1" *-[#595959,plain]-> "availableIngredientsRepository\n1" AvailableIngredientsRepository 
+IngredientService              "1" *-[#595959,plain]-> "userContextService\n1" UserContextService             
+JwtAuthFilter                  "1" *-[#595959,plain]-> "jwtService\n1" JwtService                     
+PracApplication                "1" *-[#595959,plain]-> "databaseService\n1" DatabaseService                
+Product                        "1" *-[#595959,plain]-> "prices\n1" Prices                         
+ProductCategory                "1" *-[#595959,plain]-> "subcategories\n*" Subcategory                    
+ProductParserRunner            "1" *-[#595959,plain]-> "productParserService\n1" ProductParserService           
+ProductParserService           "1" *-[#595959,plain]-> "parsedProductRepository\n1" ParsedProductRepository        
+ProductPrice                   "1" *-[#595959,plain]-> "ingredient\n1" Ingredient                     
+SecurityConfig                 "1" *-[#595959,plain]-> "jwtAuthFilter\n1" JwtAuthFilter                  
+ShoppingList                   "1" *-[#595959,plain]-> "ingredient\n1" Ingredient                     
+ShoppingList                   "1" *-[#595959,plain]-> "user\n1" User                           
+Subcategory                    "1" *-[#595959,plain]-> "products\n*" Product                        
+User                           "1" *-[#595959,plain]-> "calendar\n1" Calendar                       
+User                           "1" *-[#595959,plain]-> "role\n1" Role                           
+@enduml
