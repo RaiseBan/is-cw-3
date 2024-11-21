@@ -14,11 +14,16 @@ BEGIN
         RAISE EXCEPTION 'Календарь для пользователя % не найден', p_user_id;
     END IF;
 
-    -- Добавляем блюдо в calendar_dish с уникальным ID
+    -- Проверяем, существует ли блюдо
+    IF NOT EXISTS (SELECT 1 FROM dish WHERE dish_id = p_dish_id) THEN
+        RAISE EXCEPTION 'Блюдо с ID % не найдено', p_dish_id;
+    END IF;
+
+    -- Добавляем запись в calendar_dish
     INSERT INTO calendar_dish (calendar_id, dish_id, time)
-    SELECT calendar_id, p_dish_id, p_calendar_date
-    FROM calendar
-    WHERE user_id = p_user_id;
+    SELECT c.calendar_id, p_dish_id, p_calendar_date
+    FROM calendar c
+    WHERE c.user_id = p_user_id;
 
     -- Добавляем ингредиенты в shopping_list, если их нет у пользователя
     INSERT INTO shopping_list (user_id, ingredient_id)
@@ -29,6 +34,11 @@ BEGIN
     WHERE di.dish_id = p_dish_id AND (ai.available IS NULL OR ai.available = FALSE);
 END;
 $$;
+
+
+
+
+
 
 
 
@@ -109,10 +119,10 @@ BEGIN
                 pp.store_name,
                 CAST(pp.price AS double precision) AS price,
                 d.name AS dish_name,
-                CAST(COUNT(DISTINCT c.id) AS INT) AS count -- Уникальные записи в calendar_dish
+                CAST(COUNT(DISTINCT c.dish_id) AS INT) AS count -- Используем c.dish_id вместо c.id
             FROM calendar_dish c
                      JOIN calendar cal ON c.calendar_id = cal.calendar_id
-                     JOIN dish d ON c.dish_id = d.dish_id
+                     JOIN dish d ON c.original_dish_id = d.dish_id -- Ссылка на оригинальное блюдо
                      JOIN dish_ingredient di ON di.dish_id = d.dish_id
                      JOIN ingredient i ON di.ingredient_id = i.ingredient_id
                      LEFT JOIN product_price pp ON pp.ingredient_id = i.ingredient_id
@@ -143,10 +153,10 @@ BEGIN
                 pp.store_name,
                 CAST(pp.price AS double precision) AS price,
                 CAST(NULL AS VARCHAR) AS dish_name,
-                CAST(COUNT(DISTINCT c.id) AS INT) AS count -- Уникальные записи в calendar_dish
+                CAST(COUNT(DISTINCT c.dish_id) AS INT) AS count -- Используем c.dish_id вместо c.id
             FROM calendar_dish c
                      JOIN calendar cal ON c.calendar_id = cal.calendar_id
-                     JOIN dish d ON c.dish_id = d.dish_id
+                     JOIN dish d ON c.original_dish_id = d.dish_id -- Ссылка на оригинальное блюдо
                      JOIN dish_ingredient di ON di.dish_id = d.dish_id
                      JOIN ingredient i ON di.ingredient_id = i.ingredient_id
                      LEFT JOIN product_price pp ON pp.ingredient_id = i.ingredient_id
@@ -172,3 +182,4 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
+

@@ -31,23 +31,63 @@ public class CalendarService {
     private final YandexTranslateService yandexTranslateService;
     @Transactional
     public void addDishToCalendar(Long userId, Long dishId, String calendarDate) {
-        // Добавляем блюдо в календарь
-        entityManager.createNativeQuery("CALL add_dish_to_calendar(CAST(:userId AS INT), CAST(:dishId AS INT), CAST(:calendarDate AS TIMESTAMP))")
-                .setParameter("userId", userId)
-                .setParameter("dishId", dishId)
-                .setParameter("calendarDate", LocalDateTime.parse(calendarDate))
-                .executeUpdate();
+        // Проверяем, существует ли блюдо с указанным ID
+        Dish originalDish = entityManager.find(Dish.class, dishId);
+        if (originalDish == null) {
+            throw new IllegalArgumentException("Блюдо с ID " + dishId + " не найдено");
+        }
 
+        // Получаем календарь пользователя
+        Calendar userCalendar = entityManager.createQuery(
+                        "SELECT c FROM Calendar c WHERE c.user.id = :userId", Calendar.class)
+                .setParameter("userId", userId)
+                .getSingleResult();
+
+        if (userCalendar == null) {
+            throw new IllegalArgumentException("Календарь для пользователя " + userId + " не найден");
+        }
+
+        // Создаем новую запись в CalendarDish
+        CalendarDish calendarDish = new CalendarDish();
+        calendarDish.setCalendar(userCalendar);
+        calendarDish.setOriginalDish(originalDish);
+        calendarDish.setTime(LocalDateTime.parse(calendarDate));
+
+        // Сохраняем запись
+        entityManager.persist(calendarDish);
 
         // Получаем список ингредиентов для блюда
-        List<Ingredient> ingredients = entityManager.createQuery(
-                        "SELECT i FROM Dish d JOIN d.ingredients i WHERE d.dishId = :dishId", Ingredient.class)
-                .setParameter("dishId", dishId)
-                .getResultList();
+        List<Ingredient> ingredients = originalDish.getIngredients();
 
-        // Обновляем цены на ингредиенты
+        // Обновляем или добавляем ингредиенты в ShoppingList
+        for (Ingredient ingredient : ingredients) {
+            ShoppingList existingItem = entityManager.createQuery(
+                            "SELECT sl FROM ShoppingList sl WHERE sl.user.id = :userId AND sl.ingredient.id = :ingredientId",
+                            ShoppingList.class)
+                    .setParameter("userId", userId)
+                    .setParameter("ingredientId", ingredient.getIngredientId())
+                    .getResultStream()
+                    .findFirst()
+                    .orElse(null);
+
+            if (existingItem == null) {
+                ShoppingList shoppingList = new ShoppingList();
+                shoppingList.setUser(userCalendar.getUser());
+                shoppingList.setIngredient(ingredient);
+                entityManager.persist(shoppingList);
+            }
+
+        }
+
         updateIngredientPrices(ingredients);
     }
+
+
+
+
+
+
+
 
     public void createCalendar(User user){
         Calendar calendar = new Calendar();
@@ -60,7 +100,7 @@ public class CalendarService {
         Calendar calendar = calendarRepository.findById(userId).orElseThrow(()-> new RuntimeException("you have not your own calendar..."));
         boolean flag = false;
         for (CalendarDish calendarDish: calendar.getCalendarDishes()){
-            if (Objects.equals(calendarDish.getDish().getDishId(), dishId)){
+            if (Objects.equals(calendarDish.getDishId(), dishId)){
                 flag = true;
                 break;
             }
@@ -81,14 +121,14 @@ public class CalendarService {
 
         return calendar.getCalendarDishes().stream()
                 .map(calendarDish -> {
-                    var dish = calendarDish.getDish();
+                    var dish = calendarDish.getOriginalDish();
                     var response = new DishResponseDTO();
-                    response.setId(dish.getDishId());
+                    response.setId(calendarDish.getDishId());
                     response.setName(dish.getName());
                     response.setInstructions(dish.getInstructions());
                     response.setIngredients(
                             dish.getIngredients().stream()
-                                    .map(ingredient -> new IngredientDTO(ingredient.getName(), ingredient.getUnit()))
+                                    .map(ingredient -> new IngredientDTO(ingredient.getIngredientId(), ingredient.getName(), ingredient.getUnit()))
                                     .collect(Collectors.toList())
                     );
                     return response;

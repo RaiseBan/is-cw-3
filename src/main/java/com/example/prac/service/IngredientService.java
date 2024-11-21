@@ -14,6 +14,7 @@ public class IngredientService {
 
     // Обновление доступности ингредиента
     public void updateIngredientAvailability(Long userId, Long ingredientId, boolean available) {
+
         entityManager.createNativeQuery("SELECT update_ingredient_availability(:userId, :ingredientId, :available)")
                 .setParameter("userId", userId)
                 .setParameter("ingredientId", ingredientId)

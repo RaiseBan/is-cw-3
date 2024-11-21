@@ -75,7 +75,7 @@ public class DishService {
         response.setInstructions(dish.getInstructions());
         response.setIngredients(
                 dish.getIngredients().stream()
-                        .map(ingredient -> new IngredientDTO(ingredient.getName(), ingredient.getUnit()))
+                        .map(ingredient -> new IngredientDTO(ingredient.getIngredientId(),ingredient.getName(), ingredient.getUnit()))
                         .collect(Collectors.toList())
         );
         return response;

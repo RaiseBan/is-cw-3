@@ -14,15 +14,15 @@ public class CalendarDish {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long dishId; // Локальный уникальный ID для каждой записи в календаре
 
     @ManyToOne
     @JoinColumn(name = "calendar_id", nullable = false)
     private Calendar calendar;
 
     @ManyToOne
-    @JoinColumn(name = "dish_id", nullable = false)
-    private Dish dish;
+    @JoinColumn(name = "original_dish_id", nullable = false)
+    private Dish originalDish; // Оригинальное блюдо
 
     @Column(nullable = false)
     private LocalDateTime time; // Время добавления блюда в календарь
