@@ -6,7 +6,10 @@ import com.example.prac.dto.auth.RegisterRequest;
 //import com.example.prac.errorHandler.UserAlreadyExistsException;
 import com.example.prac.model.authEntity.Role;
 import com.example.prac.model.authEntity.User;
+import com.example.prac.model.data.Calendar;
 import com.example.prac.repository.UserRepository;
+import com.example.prac.repository.data.CalendarRepository;
+import com.example.prac.service.calendar.CalendarService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -23,6 +26,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final CalendarService calendarService;
 
     public void register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getUsername()).isPresent()) {
@@ -35,8 +39,9 @@ public class AuthenticationService {
                 .role(Role.USER)
                 .build();
 
-        userRepository.save(user);
 
+        userRepository.save(user);
+        calendarService.createCalendar(user);
 
     }
 

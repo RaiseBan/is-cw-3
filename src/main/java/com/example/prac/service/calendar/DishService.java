@@ -3,29 +3,31 @@ package com.example.prac.service.calendar;
 import com.example.prac.dto.data.DishDTO;
 import com.example.prac.dto.data.DishResponseDTO;
 import com.example.prac.dto.data.IngredientDTO;
+import com.example.prac.errorHandler.ResourceNotFoundException;
 import com.example.prac.model.data.Dish;
 import com.example.prac.model.data.Ingredient;
 import com.example.prac.repository.data.DishRepository;
 import com.example.prac.repository.data.IngredientRepository;
+import com.example.prac.service.UserContextService;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
+@AllArgsConstructor
 public class DishService {
 
     private final DishRepository dishRepository;
     private final IngredientRepository ingredientRepository;
-
-    public DishService(DishRepository dishRepository, IngredientRepository ingredientRepository) {
-        this.dishRepository = dishRepository;
-        this.ingredientRepository = ingredientRepository;
-    }
+    private final UserContextService userContextService;
 
     public DishResponseDTO createDish(DishDTO dishDTO, Long userId) {
         Dish dish = new Dish();
         dish.setName(dishDTO.getName());
+        dish.setUserId(userId);
         dish.setInstructions(dishDTO.getInstructions());
         dish.setIngredients(mapIngredients(dishDTO.getIngredients()));
         dish = dishRepository.save(dish);
@@ -33,8 +35,12 @@ public class DishService {
     }
 
     public DishResponseDTO updateDish(Long dishId, DishDTO dishDTO) {
+
         Dish dish = dishRepository.findById(dishId)
                 .orElseThrow(() -> new IllegalArgumentException("Блюдо не найдено"));
+        if (!Objects.equals(userContextService.getCurrentUserId(), dish.getUserId())){
+            throw new RuntimeException("you have no permission for this operation!"); // TODO: exception
+        }
         dish.setName(dishDTO.getName());
         dish.setInstructions(dishDTO.getInstructions());
         dish.setIngredients(mapIngredients(dishDTO.getIngredients()));
@@ -43,6 +49,10 @@ public class DishService {
     }
 
     public void deleteDish(Long dishId) {
+        Dish dishToDelete = dishRepository.findById(dishId).orElseThrow(()-> new ResourceNotFoundException("dish not found"));
+        if (!Objects.equals(dishToDelete.getUserId(), userContextService.getCurrentUserId())){
+            throw new RuntimeException("You have no permission for this operation");
+        }
         dishRepository.deleteById(dishId);
     }
 
@@ -51,6 +61,12 @@ public class DishService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+
+//    public Dish getDishById(Long id){
+////        return dishRepository.getDishByUserId(userId).orElseThrow(() -> new RuntimeException("dish not found")); // TODO: make custom exception
+//        return  dishRepository.findById(id).orElseThrow();
+//    }
+
 
     private DishResponseDTO mapToResponse(Dish dish) {
         DishResponseDTO response = new DishResponseDTO();

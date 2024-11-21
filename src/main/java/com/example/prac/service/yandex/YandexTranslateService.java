@@ -11,7 +11,7 @@ public class YandexTranslateService {
 
     private static final String TRANSLATION_URL = "https://translate.yandex.net/api/v1/tr.json/translate";
 
-    public JSONObject translate(String text) {
+    public String translate(String text) {
         try {
             // Формируем параметры строки запроса
             String queryParams = "id=a5dd6fe8.6737d421.286bcba8.74722d74657874-2-0&srv=tr-text&source_lang=en&target_lang=ru" +
@@ -41,7 +41,7 @@ public class YandexTranslateService {
 
             if (response.statusCode() == 200) {
                 // Парсим ответ как JSON
-                return new JSONObject(response.body());
+                return new JSONObject(response.body()).getJSONArray("text").getString(0);
             } else {
                 System.err.printf("Ошибка при выполнении запроса на перевод: HTTP error fetching URL. Status=%d, URL=[%s]%n",
                         response.statusCode(), TRANSLATION_URL);
@@ -54,13 +54,15 @@ public class YandexTranslateService {
 
     public static void main(String[] args) {
         YandexTranslateService service = new YandexTranslateService();
-        JSONObject jsonResponse = service.translate("Bacon");
-        if (jsonResponse != null) {
-            // Извлекаем конкретное поле "text"
-            String translatedText = jsonResponse.getJSONArray("text").getString(0);
-            System.out.println("Перевод: " + translatedText);
-        } else {
-            System.err.println("Не удалось получить перевод.");
-        }
+        System.out.println("translate " + service.translate("Bacon"));
+
+        //        JSONObject jsonResponse = service.translate("Bacon");
+//        if (jsonResponse != null) {
+//            // Извлекаем конкретное поле "text"
+//            String translatedText = jsonResponse.getJSONArray("text").getString(0);
+//            System.out.println("Перевод: " + translatedText);
+//        } else {
+//            System.err.println("Не удалось получить перевод.");
+//        }
     }
 }

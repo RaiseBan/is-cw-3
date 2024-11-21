@@ -16,6 +16,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@RequestBody RegisterRequest request) {
+        System.out.println("register");
         authenticationService.register(request);
         return ResponseEntity.ok("Пользователь `" + request.getUsername() +"` зарегистрирован. " );
     }

@@ -23,7 +23,7 @@ public class ProductPrice {
     @Column(nullable = false, length = 40)
     private String storeName;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Float price;
 
     @Column(nullable = false)

@@ -2,8 +2,10 @@ package com.example.prac.controllers;
 
 import com.example.prac.dto.data.DishDTO;
 import com.example.prac.dto.data.DishResponseDTO;
+import com.example.prac.model.data.Dish;
 import com.example.prac.service.calendar.DishService;
 import com.example.prac.service.UserContextService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,8 +28,10 @@ public class DishController {
     public ResponseEntity<DishResponseDTO> createDish(@RequestBody DishDTO dishDTO) {
         Long userId = userContextService.getCurrentUserId(); // Получаем ID пользователя
         DishResponseDTO dish = dishService.createDish(dishDTO, userId);
-        return ResponseEntity.ok(dish);
+        return new ResponseEntity<>(dish, HttpStatus.CREATED);
     }
+
+
 
     // Обновление блюда
     @PutMapping("/{dishId}")

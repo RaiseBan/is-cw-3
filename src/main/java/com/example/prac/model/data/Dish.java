@@ -16,15 +16,17 @@ public class Dish {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long dishId;
 
+    @Column(nullable = false)
+    private Long userId;
     @Column(nullable = false, length = 40)
     private String name;
 
     @Column(columnDefinition = "TEXT", nullable = false)
     private String instructions;
 
-    @OneToOne(cascade = CascadeType.ALL)
-    @JoinColumn(name = "recipe_id", nullable = false, unique = true)
-    private Recipe recipe;
+//    @OneToOne(cascade = CascadeType.ALL)
+//    @JoinColumn(name = "recipe_id", nullable = false, unique = true)
+//    private Recipe recipe;
 
     @ManyToMany
     @JoinTable(
