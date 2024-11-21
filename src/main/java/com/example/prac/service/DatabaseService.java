@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 @Service
 public class DatabaseService {
@@ -21,11 +22,20 @@ public class DatabaseService {
      */
     @Transactional
     public void createGinIndexIfNotExists() {
-        String createIndexSql = "CREATE INDEX IF NOT EXISTS idx_parsed_product_name " +
-                "ON parsed_product USING gin(to_tsvector('russian', name))";
+        try {
+            // Читаем SQL из файла
+            ClassPathResource resource = new ClassPathResource("db_sql/gin_index.sql");
+            String sql = new BufferedReader(new InputStreamReader(resource.getInputStream()))
+                    .lines()
+                    .collect(Collectors.joining("\n"));
 
-        entityManager.createNativeQuery(createIndexSql).executeUpdate();
-        System.out.println("Индекс создан или уже существует.");
+            // Выполняем SQL
+            entityManager.createNativeQuery(sql).executeUpdate();
+            System.out.println("Индекс создан или уже существует.");
+        } catch (Exception e) {
+            System.err.println("Ошибка при создании индекса: " + e.getMessage());
+            throw new RuntimeException("Не удалось выполнить скрипт создания индекса", e);
+        }
     }
 
     /**
