@@ -18,7 +18,7 @@ public class Dish {
 
     @Column(nullable = false)
     private Long userId;
-    @Column(nullable = false, length = 40)
+    @Column(nullable = false, length = 200)
     private String name;
 
     @Column(columnDefinition = "TEXT", nullable = false)

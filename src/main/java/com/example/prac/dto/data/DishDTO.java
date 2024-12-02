@@ -9,5 +9,4 @@ public class DishDTO {
     private String name; // Название блюда
     private String instructions; // Было description
     private List<IngredientDTO> ingredients; // Список ингредиентов
-    private String dateTime; // Дата и время для добавления в календарь
 }
