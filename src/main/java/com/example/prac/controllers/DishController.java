@@ -54,4 +54,11 @@ public class DishController {
         List<DishResponseDTO> dishes = dishService.getAllDishes(userId);
         return ResponseEntity.ok(dishes);
     }
+
+    @GetMapping("/{dishId}")
+    public ResponseEntity<DishResponseDTO> getDishById(@PathVariable Long dishId) {
+        DishResponseDTO dish = dishService.getDishById(dishId);
+        return ResponseEntity.ok(dish);
+    }
+
 }

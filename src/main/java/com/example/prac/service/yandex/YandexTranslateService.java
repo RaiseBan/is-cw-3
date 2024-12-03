@@ -14,8 +14,7 @@ public class YandexTranslateService {
     public String translate(String text) {
         try {
             // Формируем параметры строки запроса
-            String queryParams = "id=a5dd6fe8.6737d421.286bcba8.74722d74657874-2-0&srv=tr-text&source_lang=en&target_lang=ru" +
-                    "&reason=auto&format=text&strategy=0&disable_cache=false&ajax=1&yu=4253767081703529710&yum=1701466648369260812";
+            String queryParams = "id=bc93dd61.674e3629.98e4ec15.74722d74657874-2-0&srv=tr-text&source_lang=en&target_lang=ru&reason=auto&format=text&strategy=0&disable_cache=false&ajax=1&yu=4253767081703529710&yum=1701466648369260812";
 
             Connection.Response response = Jsoup.connect(TRANSLATION_URL + "?" + queryParams)
                     .method(Connection.Method.POST)

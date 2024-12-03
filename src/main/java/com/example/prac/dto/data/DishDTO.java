@@ -7,6 +7,7 @@ import java.util.List;
 @Data
 public class DishDTO {
     private String name; // Название блюда
-    private String instructions; // Было description
+    private String instructions; // Инструкции приготовления
     private List<IngredientDTO> ingredients; // Список ингредиентов
+    private String imageUrl; // URL изображения
 }

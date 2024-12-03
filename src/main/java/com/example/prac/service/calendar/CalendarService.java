@@ -1,14 +1,10 @@
 package com.example.prac.service.calendar;
 
-import com.example.prac.dto.data.DishResponseDTO;
-import com.example.prac.dto.data.IngredientDTO;
-import com.example.prac.dto.data.ShoppingListDTO;
+import com.example.prac.dto.data.*;
+import com.example.prac.errorHandler.ResourceNotFoundException;
 import com.example.prac.model.authEntity.User;
 import com.example.prac.model.data.*;
-import com.example.prac.repository.data.AvailableIngredientsRepository;
-import com.example.prac.repository.data.CalendarRepository;
-import com.example.prac.repository.data.ParsedProductRepository;
-import com.example.prac.repository.data.ProductPriceRepository;
+import com.example.prac.repository.data.*;
 import com.example.prac.service.UserContextService;
 import com.example.prac.service.yandex.YandexTranslateService;
 import jakarta.persistence.EntityManager;
@@ -19,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -32,6 +29,8 @@ public class CalendarService {
     private final ProductPriceRepository productPriceRepository;
     private final YandexTranslateService yandexTranslateService;
     private final AvailableIngredientsRepository availableIngredientsRepository;
+    private final CalendarDishRepository calendarDishRepository;
+    private final DishRepository dishRepository;
 
     private final UserContextService userContextService;
     @Transactional
@@ -132,6 +131,34 @@ public class CalendarService {
                 .executeUpdate();
     }
 
+
+    @Transactional
+    public CalendarDishDTOResponse updateDishInCalendar(Long dishId, CalendarDishDTOResponse calendarDishDTOResponse) {
+        // Проверяем существование записи в календаре
+        CalendarDish calendarDish = calendarDishRepository.findById(dishId)
+                .orElseThrow(() -> new ResourceNotFoundException("Dish in calendar not found"));
+
+        // Проверяем, что оригинальное блюдо существует
+        dishRepository.findById(calendarDish.getOriginalDish().getDishId())
+                .orElseThrow(() -> new ResourceNotFoundException("Original dish not found"));
+
+        // Обновляем дату и время блюда в календаре
+        calendarDish.setTime(LocalDateTime.parse(calendarDishDTOResponse.getTime()));
+
+        // Сохраняем обновление
+        CalendarDish updatedDish = calendarDishRepository.save(calendarDish);
+
+        // Возвращаем обновленное DTO
+        return new CalendarDishDTOResponse(
+                updatedDish.getDishId(),
+                updatedDish.getOriginalDish().getDishId(),
+                updatedDish.getTime().toString()
+        );
+    }
+
+
+
+
     public List<DishResponseDTO> getDishesFromCalendar(Long userId) {
         Calendar calendar = calendarRepository.findByUser_UserId(userId)
                 .orElseThrow(() -> new IllegalArgumentException("Календарь пользователя не найден"));
@@ -140,6 +167,8 @@ public class CalendarService {
                 .map(calendarDish -> {
                     var dish = calendarDish.getOriginalDish();
                     var response = new DishResponseDTO();
+                    response.setDateTime(calendarDish.getTime());
+                    System.out.println(calendarDish.getTime());
                     response.setId(calendarDish.getDishId());
                     response.setName(dish.getName());
                     response.setInstructions(dish.getInstructions());
@@ -162,7 +191,7 @@ public class CalendarService {
     private void updateIngredientPrices(List<Ingredient> ingredients) {
         for (Ingredient ingredient : ingredients) {
             // Ищем цену для ингредиента
-            System.out.println("INGREDIENT: " + ingredient);
+            System.out.println("INGREDIENT: " + ingredient.toString());
             String proxyName = yandexTranslateService.translate(ingredient.getName());
 
             List<ParsedProduct> parsedProducts = parsedProductRepository.findByFullTextSearch(proxyName.toLowerCase());
@@ -209,6 +238,7 @@ public class CalendarService {
     public List<ShoppingListDTO> getShoppingList(Long userId, String sortBy, boolean groupByDish, String sortOrder) {
         String query = "SELECT * FROM get_shopping_list(CAST(:userId AS INT), CAST(:sortBy AS VARCHAR), CAST(:groupByDish AS BOOLEAN), CAST(:sortOrder AS VARCHAR))";
 
+        // Основной список покупок
         List<ShoppingListDTO> resultList = entityManager.createNativeQuery(query)
                 .setParameter("userId", userId)
                 .setParameter("sortBy", sortBy)
@@ -217,16 +247,48 @@ public class CalendarService {
                 .unwrap(org.hibernate.query.NativeQuery.class)
                 .setResultTransformer((resultSet, rowNum) -> {
                     ShoppingListDTO dto = new ShoppingListDTO();
-                    dto.setIngredientName((String) resultSet[0]);
-                    dto.setStoreName((String) resultSet[1]);
-                    dto.setPrice((Double) resultSet[2]);
-                    dto.setDishName((String) resultSet[3]);
-                    dto.setCount((Integer) resultSet[4]);
+                    dto.setIngredientName((String) resultSet[0]); // Имя ингредиента
+                    dto.setStoreName((String) resultSet[1]); // Магазин
+                    dto.setPrice((Double) resultSet[2]); // Цена
+                    dto.setDishName((String) resultSet[3]); // Название блюда
+                    dto.setCount((Integer) resultSet[4]); // Количество
                     return dto;
                 })
                 .getResultList();
 
+        // Получение доступных ингредиентов
+        List<Object[]> availableIngredients = entityManager.createQuery(
+                        "SELECT ai.ingredient.ingredientId, ai.ingredient.name, ai.available FROM AvailableIngredients ai " +
+                                "WHERE ai.user.userId = :userId", Object[].class)
+                .setParameter("userId", userId)
+                .getResultList();
+
+        // Создаем мапу из ID ингредиента и доступности
+        Map<String, Object[]> ingredientMap = availableIngredients.stream()
+                .collect(Collectors.toMap(
+                        obj -> (String) obj[1], // Имя ингредиента
+                        obj -> new Object[]{obj[0], obj[2]}, // ID ингредиента и доступность
+                        (existing, replacement) -> existing // Логика разрешения дубликатов (оставляем существующее)
+                ));
+
+
+        // Обогащаем DTO
+        for (ShoppingListDTO dto : resultList) {
+            Object[] ingredientData = ingredientMap.get(dto.getIngredientName());
+            if (ingredientData != null) {
+                dto.setIngredientId((Long) ingredientData[0]); // ID ингредиента
+                dto.setAvailable((Boolean) ingredientData[1]); // Доступность
+            } else {
+                dto.setIngredientId(null);
+                dto.setAvailable(false); // По умолчанию недоступен
+            }
+        }
+
         return resultList;
     }
+
+
+
+
 
 }

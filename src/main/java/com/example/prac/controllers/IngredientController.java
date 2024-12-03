@@ -1,21 +1,24 @@
 package com.example.prac.controllers;
 
+import com.example.prac.dto.data.IngredientDTO;
+import com.example.prac.dto.data.IngredientDTONoId;
+import com.example.prac.model.data.Ingredient;
+import com.example.prac.repository.data.IngredientRepository;
 import com.example.prac.service.IngredientService;
 import com.example.prac.service.UserContextService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/ingredients")
+@AllArgsConstructor
 public class IngredientController {
 
     private final IngredientService ingredientService;
     private final UserContextService userContextService;
+    private final IngredientRepository ingredientRepository;
 
-    public IngredientController(IngredientService ingredientService, UserContextService userContextService) {
-        this.ingredientService = ingredientService;
-        this.userContextService = userContextService;
-    }
 
     // Обновление доступности ингредиента
     @PutMapping("/{ingredientId}/availability")
@@ -26,4 +29,6 @@ public class IngredientController {
         ingredientService.updateIngredientAvailability(userId, ingredientId, available);
         return ResponseEntity.ok().build();
     }
+
+
 }

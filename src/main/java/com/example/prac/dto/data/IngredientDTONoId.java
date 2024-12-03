@@ -5,9 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class IngredientDTO {
-    private Long id;
+public class IngredientDTONoId {
     private String name; // Название ингредиента
     private String unit; // Единица измерения
 }
-

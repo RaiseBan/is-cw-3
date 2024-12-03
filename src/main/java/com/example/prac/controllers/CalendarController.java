@@ -1,10 +1,12 @@
 package com.example.prac.controllers;
 
-import com.example.prac.dto.data.CalendarDishDTO;
-import com.example.prac.dto.data.DishResponseDTO;
-import com.example.prac.dto.data.ShoppingListDTO;
+import com.example.prac.dto.data.*;
+import com.example.prac.errorHandler.ResourceNotFoundException;
+import com.example.prac.model.data.CalendarDish;
+import com.example.prac.repository.data.CalendarDishRepository;
 import com.example.prac.service.calendar.CalendarService;
 import com.example.prac.service.UserContextService;
+import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -12,15 +14,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/calendar")
+@AllArgsConstructor
 public class CalendarController {
 
     private final CalendarService calendarService;
     private final UserContextService userContextService;
+    private final CalendarDishRepository calendarDishRepository;
 
-    public CalendarController(CalendarService calendarService, UserContextService userContextService) {
-        this.calendarService = calendarService;
-        this.userContextService = userContextService;
-    }
+
 
     // Добавление блюда в календарь
     @PostMapping("/add-dish")
@@ -45,7 +46,11 @@ public class CalendarController {
         List<DishResponseDTO> dishes = calendarService.getDishesFromCalendar(userId);
         return ResponseEntity.ok(dishes);
     }
-
+    @PutMapping("/dish/{dishId}")
+    public ResponseEntity<CalendarDishDTOResponse> updateDishInCalendar(@PathVariable Long dishId, @RequestBody CalendarDishDTOResponse calendarDishDTOResponse) {
+        CalendarDishDTOResponse updated = calendarService.updateDishInCalendar(dishId, calendarDishDTOResponse);
+        return ResponseEntity.ok(updated);
+    }
 
     @GetMapping("/shopping-list")
     public ResponseEntity<List<ShoppingListDTO>> getShoppingList(
@@ -55,5 +60,17 @@ public class CalendarController {
         Long userId = userContextService.getCurrentUserId();
         List<ShoppingListDTO> shoppingList = calendarService.getShoppingList(userId, sortBy, groupByDish, sortOrder);
         return ResponseEntity.ok(shoppingList);
+    }
+
+    @GetMapping("/original-dish/{calendarDishId}")
+    public ResponseEntity<Long> getOriginalDishId(@PathVariable Long calendarDishId) {
+        // Найти запись календарного блюда
+        CalendarDish calendarDish = calendarDishRepository.findById(calendarDishId)
+                .orElseThrow(() -> new ResourceNotFoundException("Calendar dish not found with id: " + calendarDishId));
+
+        // Получить ID оригинального блюда
+        Long originalDishId = calendarDish.getOriginalDish().getDishId();
+
+        return ResponseEntity.ok(originalDishId);
     }
 }
