@@ -28,9 +28,11 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)  // Отключаем CSRF
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/", "/index.html", "/static/**")
+                        .permitAll()
                         .requestMatchers("/api/v1/auth/**").permitAll()  // Публичные страницы
                         .requestMatchers("/api/dishes/**").authenticated()
-                        .requestMatchers("api/calendar/**").authenticated()
+                        .requestMatchers("/api/calendar/**").authenticated()
                         .anyRequest().authenticated()  // Все остальные запросы требуют аутентификации
                 )
                 .sessionManagement(session -> session
@@ -44,8 +46,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");  // Разрешаем запросы с фронтенда
-        configuration.addAllowedMethod("*");  // Разрешаем любые HTTP методы
+        configuration.addAllowedOrigin("*");
+        configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");  // Разрешаем любые заголовки
         configuration.setAllowCredentials(true);  // Разрешаем отправку cookies/credentials
 

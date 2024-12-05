@@ -31,6 +31,7 @@ public class DishService {
     private final IngredientRepository ingredientRepository;
     private final UserContextService userContextService;
     private final AvailableIngredientsRepository availableIngredientsRepository;
+    private final CalendarService calendarService;
 
     public DishResponseDTO createDish(DishDTO dishDTO, Long userId) {
         Dish dish = new Dish();
@@ -46,7 +47,7 @@ public class DishService {
 
 
     @Transactional
-    public DishResponseDTO updateDish(Long dishId, DishDTO dishDTO) {
+    public DishResponseDTO  updateDish(Long dishId, DishDTO dishDTO) {
         // Проверяем, существует ли блюдо
         Dish dish = dishRepository.findById(dishId)
                 .orElseThrow(() -> new IllegalArgumentException("Блюдо не найдено"));
@@ -113,6 +114,8 @@ public class DishService {
 
         // Сохраняем блюдо
         Dish updatedDish = dishRepository.save(dish);
+
+        calendarService.updateIngredientPrices(updatedDish.getIngredients());
 
         // Возвращаем DTO
         return mapToResponse(updatedDish);

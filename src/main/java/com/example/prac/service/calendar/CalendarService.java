@@ -188,7 +188,7 @@ public class CalendarService {
      *
      * @param ingredients список ингредиентов.
      */
-    private void updateIngredientPrices(List<Ingredient> ingredients) {
+    public void updateIngredientPrices(List<Ingredient> ingredients) {
         for (Ingredient ingredient : ingredients) {
             // Ищем цену для ингредиента
             System.out.println("INGREDIENT: " + ingredient.toString());
